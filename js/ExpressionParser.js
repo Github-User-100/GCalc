@@ -4,13 +4,18 @@ import { AppLogger } from '../../shared/AppLogger/javascript/AppLogger.js';
  * Recursive-descent parser for arithmetic expressions.
  *
  * Supported: + - * / ^ ( ) decimal  unary negation (~)
- * Tokens:    digits, operators, parens. The keypad sends × as *, ÷ as /, ~ as unary minus.
+ *            sin cos tan asin acos atan ln log sqrt abs exp
+ *            √( as display alias for sqrt(
+ *            constants: π (Math.PI), e (Math.E)
+ * Trig:      radians (not degrees — matches Phase 2 graphing convention)
  *
  * Grammar:
  *   expr     → term (('+' | '-') term)*
  *   term     → factor (('*' | '/') factor)*
  *   factor   → base ('^' factor)?          (right-associative)
- *   base     → '~' base | '(' expr ')' | number
+ *   base     → '~' base | func '(' expr ')' | '(' expr ')' | constant | number
+ *   func     → 'sin'|'cos'|'tan'|'asin'|'acos'|'atan'|'ln'|'log'|'sqrt'|'abs'|'exp'|'√'
+ *   constant → 'π' | 'e'
  *   number   → digit+ ('.' digit*)?
  */
 export class ExpressionParser {
@@ -83,9 +88,51 @@ export class ExpressionParser {
       if (ch === '÷') { tokens.push({ type: 'OP', value: '/' }); i++; continue; }
       if (ch === '−') { tokens.push({ type: 'OP', value: '-' }); i++; continue; }
 
+      // π constant
+      if (ch === 'π') { tokens.push({ type: 'NUM', value: Math.PI }); i++; continue; }
+
+      // √ — display alias for sqrt, treated as a function token
+      if (ch === '√') { tokens.push({ type: 'FUNC', value: 'sqrt' }); i++; continue; }
+
+      // Letter sequences: function names (sin, cos, …) or constant 'e'
+      if (/[a-zA-Z]/.test(ch)) {
+        let name = '';
+        while (i < expr.length && /[a-zA-Z]/.test(expr[i])) name += expr[i++];
+        if (name === 'e') {
+          tokens.push({ type: 'NUM', value: Math.E });
+        } else if (['sin','cos','tan','asin','acos','atan','ln','log','sqrt','abs','exp'].includes(name)) {
+          tokens.push({ type: 'FUNC', value: name });
+        } else {
+          return new Error('ERR:SYNTAX');
+        }
+        continue;
+      }
+
       return new Error('ERR:SYNTAX');
     }
     return tokens;
+  }
+
+  // ── Function evaluator ───────────────────────────────────────────────
+
+  static #applyFunction(name, arg) {
+    switch (name) {
+      case 'sin':  return Math.sin(arg);
+      case 'cos':  return Math.cos(arg);
+      case 'tan': {
+        const t = Math.tan(arg);
+        return isFinite(t) ? t : new Error('ERR:UNDEFINED');
+      }
+      case 'asin': return (arg >= -1 && arg <= 1) ? Math.asin(arg) : new Error('ERR:DOMAIN');
+      case 'acos': return (arg >= -1 && arg <= 1) ? Math.acos(arg) : new Error('ERR:DOMAIN');
+      case 'atan': return Math.atan(arg);
+      case 'ln':   return arg > 0 ? Math.log(arg)   : new Error('ERR:DOMAIN');
+      case 'log':  return arg > 0 ? Math.log10(arg) : new Error('ERR:DOMAIN');
+      case 'sqrt': return arg >= 0 ? Math.sqrt(arg) : new Error('ERR:DOMAIN');
+      case 'abs':  return Math.abs(arg);
+      case 'exp':  return Math.exp(arg);
+      default:     return new Error('ERR:SYNTAX');
+    }
   }
 
   // ── Recursive-descent parser ─────────────────────────────────────────
@@ -155,10 +202,24 @@ export class ExpressionParser {
       return base;
     }
 
-    // base → '~' base | '(' expr ')' | number
+    // base → '~' base | func '(' expr ')' | '(' expr ')' | constant | number
     #parseBase() {
       const tok = this.#peek();
       if (!tok) return new Error('ERR:SYNTAX');
+
+      // Function call: func(expr)
+      if (tok.type === 'FUNC') {
+        this.#consume();
+        const open = this.#peek();
+        if (!open || open.type !== 'OP' || open.value !== '(') return new Error('ERR:SYNTAX');
+        this.#consume();
+        const arg = this.parseExpr();
+        if (arg instanceof Error) return arg;
+        const close = this.#peek();
+        if (!close || close.type !== 'OP' || close.value !== ')') return new Error('ERR:SYNTAX');
+        this.#consume();
+        return ExpressionParser.#applyFunction(tok.value, arg);
+      }
 
       // Unary negation token
       if (tok.type === 'OP' && tok.value === '~') {

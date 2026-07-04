@@ -40,28 +40,28 @@ const KEY_DEFS = [
   { type: 'action',   label: 'CLEAR',  action: 'clearLiveInput', cssClass: 'key-action' },
 
   // ── Row 5: Scientific functions ─────────────────────────────────────
-  { type: 'disabled', label: 'x⁻¹',    secondary: 'ABS' },
-  { type: 'disabled', label: 'SIN',    secondary: 'SIN⁻¹'  },
-  { type: 'disabled', label: 'COS',    secondary: 'COS⁻¹'  },
-  { type: 'disabled', label: 'TAN',    secondary: 'TAN⁻¹'  },
-  { type: 'input',    label: '^',      char: '^',  secondary: 'π'  },
+  { type: 'input',    label: 'x⁻¹',   char: '^(-1)', secondary: 'ABS'   },
+  { type: 'input',    label: 'SIN',   char: 'sin(',  secondary: 'SIN⁻¹' },
+  { type: 'input',    label: 'COS',   char: 'cos(',  secondary: 'COS⁻¹' },
+  { type: 'input',    label: 'TAN',   char: 'tan(',  secondary: 'TAN⁻¹' },
+  { type: 'input',    label: '^',     char: '^',     secondary: 'π'      },
 
-  // ── Row 6: Parentheses + divide ────────
-  { type: 'disabled', label: 'x²',     secondary: '√'      },
-  { type: 'disabled', label: ',',      secondary: 'EE'      },
+  // ── Row 6: x² / comma / parens / divide ────────────────────────────
+  { type: 'input',    label: 'x²',    char: '^2',    secondary: '√'      },
+  { type: 'disabled', label: ',',     secondary: 'EE'                    },
   { type: 'input',    label: '(',      char: '(',  secondary: '{' },
   { type: 'input',    label: ')',      char: ')',  secondary: '}' },
   { type: 'input',    label: '÷',      char: '/',  cssClass: 'key-dark' },
 
   // ── Row 7: Digits 7–9 + multiply ────────────────────────────────────
-  { type: 'disabled', label: 'LOG',    secondary: '10ˣ'    },
+  { type: 'input',    label: 'LOG',   char: 'log(',  secondary: '10ˣ'  },
   { type: 'input',    label: '7',      char: '7'            },
   { type: 'input',    label: '8',      char: '8'            },
   { type: 'input',    label: '9',      char: '9'            },
   { type: 'input',    label: '×',      char: '*',  cssClass: 'key-dark' },
 
   // ── Row 8   ───────────────────────────────────
-  { type: 'disabled', label: 'LN',     secondary: 'eˣ'     },
+  { type: 'input',    label: 'LN',    char: 'ln(',   secondary: 'eˣ'   },
   { type: 'input',    label: '4',      char: '4'            },
   { type: 'input',    label: '5',      char: '5'            },
   { type: 'input',    label: '6',      char: '6'            },
