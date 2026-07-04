@@ -1,0 +1,16 @@
+{
+  "name": "gcalc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve .. --listen 8080",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "three": "^0.185.0"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}

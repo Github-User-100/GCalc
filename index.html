@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCalc</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="calculator-body">
+
+    <!-- ── Left column: keypad ─────────────────────────────── -->
+    <div class="keypad-column">
+      <div id="keypad" class="keypad"></div>
+    </div>
+
+    <!-- ── Right column: screens ──────────────────────────── -->
+    <div class="screens-column">
+
+      <!-- Graph screen -->
+      <div class="screen graph-screen">
+        <div class="screen-header">
+          <span class="screen-label">GRAPH</span>
+          <button id="btn-clr-graph" class="clr-btn">CLEAR</button>
+        </div>
+        <div class="graph-area">
+          <canvas id="graph-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- History screen -->
+      <div class="screen history-screen">
+        <div class="screen-header">
+          <span class="screen-label">HISTORY</span>
+          <button id="btn-clr-hist" class="clr-btn">CLEAR</button>
+        </div>
+        <div class="history-area">
+          <div id="history-log" class="history-log">
+            <div class="history-spacer"></div>
+          </div>
+          <div class="live-input-row">
+            <span id="live-input" class="live-input"></span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /screens-column -->
+  </div><!-- /calculator-body -->
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
