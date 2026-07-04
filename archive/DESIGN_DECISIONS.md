@@ -495,6 +495,79 @@ cells), and `clearHistory()` uses a targeted query to preserve the spacer rather
 
 ---
 
+## 2026-07-04 14:00 CDT — Phase 2 Graphing Input Design
+
+---
+
+### Graphing Mode: Explicit Mode Keys Over Auto-Detection
+
+The central design question for Phase 2: how does the user declare they want to graph
+something, and how does the calculator know which variables are valid?
+
+Three options were evaluated before any Phase 2 code was written.
+
+**Auto-detect from expression (rejected):** If the live line contains `x`, treat it as
+2D; if it contains `x` and `y`, treat it as 3D. Appealing — zero mode-switching UI.
+Rejected for two reasons: (1) input validation becomes undefined — what characters are
+valid on the live line at any given moment is ambiguous to both the user and the code;
+(2) it doesn't scale to Phase 2b, where `x` as a graphing variable and `x` as an
+algebraic unknown could become confused in edge cases.
+
+**Single Y= entry with dimension picker (rejected):** Y= → picker (2D / 3D) → type
+expression. Explicit, but adds a required UI step before every graph with no precedent
+in the TI-82 lineage.
+
+**Two explicit mode keys (chosen):** Y= enters 2D graphing mode. A second dedicated key
+(selected during Phase 2b design from available stub keys) enters 3D mode. Each mode has
+its own entry point, its own prompt, and its own allowed character set.
+
+[RJ] The deciding factor was stated directly: *"That way we can leave the number/arithmetic
+character restrictions for the Live Line in calculation mode but enable x,y characters for
+the graphing."* This is a correctness argument, not just preference. Three input modes,
+three distinct valid character sets:
+
+| Mode              | Entry point | Valid extra characters |
+|-------------------|-------------|------------------------|
+| Calc mode         | default     | none beyond arithmetic |
+| 2D graph (Y=)     | Y= key      | `x`                    |
+| 3D graph (TBD key)| TBD stub    | `x`, `y`               |
+
+Mode-specific filtering prevents the user from accidentally typing `x` in a calculation
+or losing track of context. The mode key pressed defines the contract.
+
+[RJ] The auto-detect option was genuinely appealing — explicit preference was stated for
+clean interfaces with minimal controls. The rejection came from recognizing that *apparent*
+simplicity (no mode button) creates *hidden* complexity (ambiguous input validation, unclear
+variable scope). Explicit mode separation is architecturally cleaner even if it costs one
+button press. This tension — less UI vs. clearer UI — is worth naming because it comes up
+constantly in product decisions. The rule here: when removing a control makes the system
+harder to reason about, the control earns its place.
+
+---
+
+### Phase 1 Scope Expansion: Scientific Functions Before Graphing
+
+[RJ] After declaring Phase 1 complete, I identified that the scientific function keys
+(SIN, COS, TAN, LN, LOG, √, x², x⁻¹, π) were all disabled stubs — present in the layout
+but doing nothing. These are pure arithmetic operations requiring no variables, no graphing
+pipeline, and no mode switching. They belong in Phase 1.
+
+**Decision:** Phase 1 is extended to include:
+- ExpressionParser extended to handle named function calls: `sin()`, `cos()`, `tan()`,
+  `asin()`, `acos()`, `atan()`, `ln()`, `log()`, `sqrt()`, `abs()`, and the constants
+  `π` and `e`.
+- Scientific keys enabled as InputKeys: SIN sends `sin(`, COS sends `cos(`, etc., allowing
+  natural expression composition (`sin(30)`, `log(100)`).
+- x² sends `^2` (postfix square), x⁻¹ sends `^(-1)`, √ sends `sqrt(`.
+- π and e send their numeric token directly to the buffer.
+- 2nd-key toggle deferred to Phase 2a (inverse trig etc. require it).
+
+The principle: anything that is purely a calculation on numbers with no graphing dependency
+belongs in Phase 1. Deferring sin/cos/log to Phase 2 was an arbitrary scope decision that
+would have left the calculator materially incomplete at a stage where it was being reviewed.
+
+---
+
 ## 2026-07-04 13:30 CDT — Phase 1 Complete
 
 Phase 1 declared complete. Verified working:

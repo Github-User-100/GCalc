@@ -97,22 +97,62 @@ On context reset, read this file, find the first unchecked item, and resume ther
 - [x] Update tests/MANUAL_TESTS_CHECKLIST.md with Phase 1 visual/interaction items
 - [x] Append test framework decision to archive/DESIGN_DECISIONS.md
 
+## Tasks — Phase 1 Extended: Scientific Functions
+
+### ExpressionParser Extensions
+- [ ] Add function-call parsing: sin(), cos(), tan(), asin(), acos(), atan()
+- [ ] Add: ln(), log() (base 10), sqrt(), abs()
+- [ ] Add: exp() or e^x (Euler's number raised to power)
+- [ ] Add constants: π (Math.PI) and e (Math.E) as named tokens
+- [ ] Preserve all existing arithmetic — no regressions
+
+### Key Enablement
+- [ ] SIN → InputKey, sends `sin(`
+- [ ] COS → InputKey, sends `cos(`
+- [ ] TAN → InputKey, sends `tan(`
+- [ ] LN  → InputKey, sends `ln(`
+- [ ] LOG → InputKey, sends `log(`
+- [ ] √   → InputKey, sends `sqrt(`
+- [ ] x²  → InputKey, sends `^2`  (postfix — appends to current expression)
+- [ ] x⁻¹ → InputKey, sends `^(-1)`
+- [ ] π   → InputKey, sends `π` token (parser converts to Math.PI value)
+- [ ] e   → InputKey, sends `e` token (parser converts to Math.E value) [if key available]
+
+### Testing
+- [ ] Expand calculator.test.js: sin/cos/tan/ln/log/sqrt/π/e cases
+- [ ] Test: nested expressions e.g. sin(π/2), log(sqrt(100))
+- [ ] Test: error cases e.g. sqrt(-1), ln(0)
+
 ## Tasks — Phase 2a: 2D Graphing
-- [ ] Extend ExpressionParser: handle x as a variable → evaluate as y = f(x)
-- [ ] Formula detection in Calculator: input containing x → graph route
-- [ ] GraphDisplay: render 2D function plots (line across x range, mapped to canvas)
-- [ ] History entries for graphed formulas show "→ graphed" instead of numeric result
-- [ ] Y= screen: input up to 10 function definitions
+
+**Mode entry:** Y= key activates 2D graphing mode. Live line prompt changes to `f(x) =`.
+Only `x` is valid as a free variable. All arithmetic and scientific functions remain valid.
+Pressing any non-graph key or CLEAR exits graphing mode.
+
+- [ ] Calculator: add GRAPH_2D state; Y= key transitions to it
+- [ ] Live line: show `f(x) =` prefix in GRAPH_2D state
+- [ ] Input filtering: allow `x` character only in GRAPH_2D state
+- [ ] Extend ExpressionParser: evaluate expression with x substituted for each point
+- [ ] GraphDisplay: render 2D function plot (sample f(x) across xMin..xMax range)
+- [ ] History entries for graphed formulas show the formula and "→ graphed"
 - [ ] WINDOW screen: set xMin, xMax, yMin, yMax, xScl, yScl
 - [ ] TRACE mode: highlight point on curve, display (x, y) coords
-- [ ] Wire scientific keys: SIN, COS, TAN, LOG, LN, x², √, x⁻¹, ^
-- [ ] 2nd-key toggle: ModeKey shifts secondary labels on applicable keys
+- [ ] 2nd-key toggle: ModeKey shifts secondary labels; enables SIN⁻¹, COS⁻¹, TAN⁻¹,
+      eˣ, 10ˣ, x√
 - [ ] ZOOM presets: ZStandard, ZSquare, ZDecimal
 - [ ] Multiple functions on same graph in different colors
 
 ## Tasks — Phase 2b: 3D Graphing
-- [ ] Extend ExpressionParser: handle x and y as variables → z = f(x, y)
-- [ ] 3D mode detection: input containing both x and y → 3D graph route
+
+**Mode entry:** A dedicated stub key (selected at Phase 2b start from available stubs)
+activates 3D graphing mode. Live line prompt changes to `f(x,y) =`.
+Both `x` and `y` are valid as free variables. Result is z = f(x, y) surface plot.
+
+- [ ] Select and wire the 3D mode key from available stub keys
+- [ ] Calculator: add GRAPH_3D state; selected key transitions to it
+- [ ] Live line: show `f(x,y) =` prefix in GRAPH_3D state
+- [ ] Input filtering: allow `x` and `y` characters only in GRAPH_3D state
+- [ ] Extend ExpressionParser: evaluate expression with x and y substituted on a grid
 - [ ] GraphDisplay: build surface mesh (evaluate z on x,y grid → BufferGeometry)
 - [ ] Apply Three.js material with shading to surface mesh
 - [ ] Mouse/touch drag to rotate view (Three.js OrbitControls)
@@ -130,3 +170,5 @@ On context reset, read this file, find the first unchecked item, and resume ther
 - KeyRegistry keeps layout as data. Adding/changing a key = editing one data row.
 - Phase 2a validates the parser and 2D pipeline before committing to 3D (Phase 2b).
 - No localStorage, no cookies. History is session-only.
+- Mode character restrictions: calc mode (no variables), 2D mode (x only), 3D mode (x,y).
+- 3D mode key: TBD — select from stub keys at Phase 2b design session.
