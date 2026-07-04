@@ -41,6 +41,13 @@ export class Key {
   get disabled() { return this.#disabled; }
 
   onPress() {} // override in subclasses
+
+  simulatePress() {
+    if (this.#disabled) return;
+    this.#element.classList.add('key-pressed');
+    this.onPress();
+    setTimeout(() => this.#element.classList.remove('key-pressed'), 120);
+  }
 }
 
 // ── Subclasses ──────────────────────────────────────────────────────────

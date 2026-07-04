@@ -189,13 +189,15 @@ body {
   cursor: pointer;
   font-family: inherit;
   user-select: none;
-  transition: filter 0.1s, transform 0.08s;
+  transition: filter 0.1s, transform 0.08s, box-shadow 0.08s;
   padding: 2px 1px;
   overflow: hidden;
 }
-.key:active:not(.key-disabled) {
-  transform: translateY(1px);
-  filter: brightness(0.85);
+.key:active:not(.key-disabled),
+.key.key-pressed {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 var(--key-shadow), inset 0 2px 4px rgba(0,0,0,0.4);
+  filter: brightness(0.88);
 }
 
 .key-label {
@@ -222,36 +224,53 @@ body {
 
 /* ── Key color variants ────────────────────────────────────────────── */
 .key-dark {
-  background: #1c1c1c;
+  --key-shadow: #000;
+  background: linear-gradient(180deg, #303030 0%, #1c1c1c 100%);
   color: #e8e8e8;
-  box-shadow: 0 3px 0 #000, 0 1px 2px rgba(0,0,0,0.4);
+  border: 1px solid #111;
+  box-shadow: 0 6px 0 var(--key-shadow), inset 0 1px 0 rgba(255,255,255,0.10);
 }
-.key-dark:hover:not(.key-disabled) { background: #2e2e2e; }
+.key-dark:hover:not(.key-disabled) {
+  background: linear-gradient(180deg, #3c3c3c 0%, #262626 100%);
+}
 
 .key-blue {
-  background: #2255aa;
+  --key-shadow: #0d2a5e;
+  background: linear-gradient(180deg, #2a66cc 0%, #1a4499 100%);
   color: #fff;
-  box-shadow: 0 3px 0 #112244, 0 1px 2px rgba(0,0,0,0.4);
+  border: 1px solid #0d2a5e;
+  box-shadow: 0 6px 0 var(--key-shadow), inset 0 1px 0 rgba(255,255,255,0.18);
 }
-.key-blue:hover:not(.key-disabled) { background: #3366cc; }
+.key-blue:hover:not(.key-disabled) {
+  background: linear-gradient(180deg, #3377dd 0%, #2255bb 100%);
+}
 
 .key-action {
-  background: #444;
+  --key-shadow: #111;
+  background: linear-gradient(180deg, #585858 0%, #3a3a3a 100%);
   color: #fff;
-  box-shadow: 0 3px 0 #111, 0 1px 2px rgba(0,0,0,0.4);
+  border: 1px solid #1a1a1a;
+  box-shadow: 0 6px 0 var(--key-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
 }
-.key-action:hover:not(.key-disabled) { background: #555; }
+.key-action:hover:not(.key-disabled) {
+  background: linear-gradient(180deg, #646464 0%, #464646 100%);
+}
 
 .key-enter {
-  background: #1a6e3a;
+  --key-shadow: #072010;
+  background: linear-gradient(180deg, #1f7a38 0%, #124822 100%);
   color: #fff;
-  box-shadow: 0 3px 0 #0a3a1a, 0 1px 2px rgba(0,0,0,0.4);
+  border: 1px solid #072010;
+  box-shadow: 0 6px 0 var(--key-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
 }
-.key-enter:hover:not(.key-disabled) { background: #22883f; }
+.key-enter:hover:not(.key-disabled) {
+  background: linear-gradient(180deg, #259040 0%, #165a28 100%);
+}
 
 .key-disabled {
-  background: #2a2a2a;
+  background: linear-gradient(180deg, #272727 0%, #1e1e1e 100%);
   color: #555;
   cursor: default;
-  box-shadow: 0 2px 0 #111;
+  border: 1px solid #111;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
 }

@@ -318,3 +318,193 @@ server keeps the shared library live-linked; vendoring enables offline double-cl
 Deferred for now — if the server friction becomes significant during Phase 2 development,
 vendoring AppLogger is the resolution.
 
+---
+
+## 2026-07-04 13:00 CDT — Phase 1 Visual Build: Layout, History, and UI Decisions
+
+---
+
+### History Display: Spacer-Push Architecture
+
+[Both] The history log needed entries to appear anchored to the bottom — the most recent
+entry should always be visible at the bottom of the pane, with older entries scrolling up
+behind it, exactly like a terminal or modern calculator. The naive approach would be to
+programmatically scroll to the bottom after every `appendChild` call.
+
+The CSS-native solution is cleaner: a `<div class="history-spacer">` with `flex: 1` as
+the first child of the flexbox scroll container. The spacer absorbs all available vertical
+space, pushing entries toward the bottom. As entries accumulate and overflow the container,
+the spacer compresses to zero and the scroll container takes over naturally. No JavaScript
+scroll management required.
+
+```
+#history-log (display: flex; flex-direction: column; overflow-y: auto)
+  ├── .history-spacer (flex: 1)   ← pushes entries to bottom
+  ├── .history-entry
+  ├── .history-entry
+  └── .history-entry              ← always visible at bottom
+```
+
+The `clearHistory()` method removes only `.history-entry` elements, preserving the spacer.
+One DOM query, no index management.
+
+---
+
+### Live Input Line: Anchored Footer, Not Inline
+
+[RJ] My initial direction: the live input should behave like a terminal prompt — always
+visible at the bottom of the screen, not scrolling with the history. Early implementation
+had the live input inside the scroll container, which caused it to scroll out of view.
+
+**Decision:** Live input lives outside `#history-log` entirely, as a fixed footer below it.
+The history area is a two-part flex column: `#history-log` (flex: 1, scrollable) and
+`.live-input-row` (flex-shrink: 0, always visible). The live input has a permanent
+`min-height` so it doesn't collapse when empty — a blank live line and a populated one
+occupy the same vertical space.
+
+[RJ] **Blank after ENTER:** After evaluation, the live input clears immediately rather
+than showing the result. The result is already visible in the history panel directly above.
+Showing it twice serves no purpose and creates momentary confusion about whether the
+expression was evaluated or just echoed. This is a departure from the TI-82 (which shows
+the result on the live line), justified by the simultaneous history display.
+
+---
+
+### TI-82 Key Layout: Fidelity vs. Rectangular Grid Constraints
+
+[RJ] I provided a TI-82 reference image and required the layout to match it — key
+positions, labels, and secondary (2nd-function) labels. Several layout decisions resulted:
+
+**A-LOCK placement:** On the physical TI-82, A-LOCK is the 2nd-function of the ALPHA key
+— shown as yellow text above ALPHA, not as a separate key. An early implementation had
+A-LOCK as its own key. This was wrong and immediately recognizable to any TI-82 user.
+Fixed: `{ label: 'ALPHA', secondary: 'A-LOCK' }`.
+
+**Navigation cluster:** The TI-82 has a cross-shaped directional pad. A rectangular CSS
+grid cannot represent a cross shape without spanning cells, which would require manual
+`grid-column` and `grid-row` placement on every key — a significant complexity increase
+for keys that are non-functional in Phase 1. Decision: blank the four navigation positions
+(`label: ''`, type: `disabled`) rather than misrepresent the layout with incorrectly
+positioned arrows. The blank cells are visually honest about the constraint.
+
+**Secondary labels left-aligned:** Secondary labels (yellow 2nd-function labels) are
+`position: absolute` inside each key, offset to the top-left. Centered secondary labels
+collided visually with primary labels on shorter key text. Left-alignment with a 4px inset
+gives each label its own visual zone.
+
+**Declarative layout maintenance:** All 55 keys are defined as plain objects in `KEY_DEFS`.
+Correcting a label, adding a secondary, or changing a key's behavior is a one-line data
+change, not a DOM or class refactor. This paid off repeatedly during the layout review
+session — corrections took seconds each.
+
+---
+
+### CSS 3D Button Effect: Custom Property Shadow Architecture
+
+[RJ] Direction: make the keys look like physical raised buttons, not flat rectangles.
+
+The core challenge: each key variant (dark, action, enter) has a different shadow color
+for its "side" — the solid-color bottom shadow that creates the illusion of button
+thickness. A single `:active` rule that compresses that shadow needs to know which color
+to compress to. With hardcoded shadow values, you'd need a per-variant `:active` rule.
+
+**Solution: CSS custom properties as intra-cascade communication.**
+
+Each variant declares `--key-shadow` on itself:
+```css
+.key-dark  { --key-shadow: #000; }
+.key-enter { --key-shadow: #072010; }
+```
+
+The shared box-shadow declaration and the `:active` collapse rule both reference the
+variable. The correct color resolves at paint time without duplication:
+```css
+.key-dark {
+  box-shadow: 0 6px 0 var(--key-shadow), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+.key:active:not(.key-disabled),
+.key.key-pressed {
+  transform: translateY(6px);
+  box-shadow: 0 0 0 var(--key-shadow), inset 0 2px 4px rgba(0,0,0,0.4);
+}
+```
+
+The button "presses in" 6px and the side shadow collapses to 0 — the visual effect is
+the key physically descending into the calculator housing. One `:active` rule handles
+all variants. Adding a new key color in the future requires only declaring the variable
+on the new class — the press behavior inherits automatically.
+
+---
+
+### Keyboard-to-Button Routing: The simulatePress Pattern
+
+[RJ] Direction: keyboard input should animate the corresponding on-screen button, not
+just trigger the calculation silently. Additionally, the keyboard handler and the click
+handler were two separate code paths calling the same calculator methods — a maintenance
+liability.
+
+**Decision: route all input through the key objects themselves.**
+
+`Key.simulatePress()` is the single execution point for any key press, regardless of
+input source:
+1. Adds `.key-pressed` CSS class → triggers the 3D press animation
+2. Calls `this.onPress()` → executes the key's action
+3. Removes `.key-pressed` after 120ms via `setTimeout`
+
+`KeyRegistry` builds two maps during `build()`:
+- `#charMap: Map<char, Key>` — indexed by internal character token
+- `#actionMap: Map<actionName, Key>` — indexed by action name
+
+`pressChar(char)` and `pressAction(name)` are the public interface. The keyboard handler
+calls only these:
+```javascript
+if (e.key === 'Enter')     { registry.pressAction('evaluate'); }
+if (/^[0-9]$/.test(e.key)){ registry.pressChar(e.key); }
+```
+
+The keyboard handler contains zero calculator method calls. Adding a new key behavior
+or remapping a keyboard shortcut is a single-location change. Keyboard and mouse inputs
+are now guaranteed to be identical in behavior — they share the exact same execution path.
+
+[RJ] The `.key-pressed` class shares its CSS declaration with `:active` via a grouped
+selector:
+```css
+.key:active:not(.key-disabled),
+.key.key-pressed { ... }
+```
+No duplicated style rules. The visual is authoritative in one place.
+
+---
+
+### Explicit State Design: Empty ENTER
+
+[RJ] Principle stated directly: *"I prefer explicit design over hopeful design."*
+
+`Calculator.evaluate()` has an explicit early return on empty buffer:
+```javascript
+if (!this.#buffer.trim()) return null;
+```
+
+The intercept in `main.js` checks `if (entry)` before appending to history. Both layers
+are intentional. The behavior on empty ENTER is documented, not incidental.
+
+This principle applied throughout Phase 1: disabled keys are `DisabledKey` instances
+(not absent), blank navigation slots have explicit `label: ''` entries (not missing grid
+cells), and `clearHistory()` uses a targeted query to preserve the spacer rather than
+`innerHTML = ''`.
+
+---
+
+## 2026-07-04 13:30 CDT — Phase 1 Complete
+
+Phase 1 declared complete. Verified working:
+- Arithmetic (+, −, ×, ÷, ^, parentheses, negation via `(-)` key)
+- History display with click-to-copy
+- Live input line with keyboard and button input, both animating on-screen keys
+- DEL (backspace), CLEAR (live line), CLR (history panel)
+- 3D button visuals with press animation
+- Empty ENTER handled explicitly (no-op)
+
+Initial commit pushed to GitHub: `Github-User-100/GCalc`, branch `master`.
+Phase 2a (2D graphing) is next.
+

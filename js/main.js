@@ -48,31 +48,18 @@ try {
   btnClrGraph.addEventListener('click', () => graphDisplay.clearGraph());
   btnClrHist.addEventListener('click',  () => historyDisplay.clearHistory());
 
-  // ── Keyboard support ─────────────────────────────────────────────────
+  // ── Keyboard support — routes through registry so buttons animate ──
+  const KEY_MAP = { '*': '*', '/': '/', '-': '-', '+': '+',
+                    '.': '.', '(': '(', ')': ')', '^': '^' };
   document.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.altKey || e.metaKey) return;
 
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      calculator.evaluate();
-      return;
-    }
-    if (e.key === 'Backspace') {
-      e.preventDefault();
-      calculator.delete();
-      return;
-    }
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      calculator.clearLiveInput();
-      return;
-    }
+    if (e.key === 'Enter')     { e.preventDefault(); registry.pressAction('evaluate');       return; }
+    if (e.key === 'Backspace') { e.preventDefault(); registry.pressAction('delete');         return; }
+    if (e.key === 'Escape')    { e.preventDefault(); registry.pressAction('clearLiveInput'); return; }
 
-    // Map keyboard chars to internal tokens
-    const MAP = { '*': '*', '/': '/', '-': '-', '+': '+',
-                  '.': '.', '(': '(', ')': ')', '^': '^' };
-    if (/^[0-9]$/.test(e.key)) { calculator.input(e.key); return; }
-    if (MAP[e.key] !== undefined) { calculator.input(MAP[e.key]); return; }
+    if (/^[0-9]$/.test(e.key))       { registry.pressChar(e.key);          return; }
+    if (KEY_MAP[e.key] !== undefined) { registry.pressChar(KEY_MAP[e.key]); return; }
   });
 
   log.log('INFO', 'GCalc ready');

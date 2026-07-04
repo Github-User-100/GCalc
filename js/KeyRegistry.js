@@ -84,7 +84,9 @@ const KEY_DEFS = [
 ];
 
 export class KeyRegistry {
-  #keys = [];
+  #keys      = [];
+  #charMap   = new Map();
+  #actionMap = new Map();
 
   build(calculator, container) {
     const log = AppLogger.enter('KeyRegistry.build');
@@ -93,6 +95,8 @@ export class KeyRegistry {
         const key = this.#createKey(def, calculator);
         this.#keys.push(key);
         container.appendChild(key.element);
+        if (def.type === 'input')  this.#charMap.set(def.char, key);
+        if (def.type === 'action') this.#actionMap.set(def.action, key);
       }
       log.log('INFO', `Rendered ${this.#keys.length} keys`);
     } catch (err) {
@@ -129,5 +133,13 @@ export class KeyRegistry {
       default:
         return new DisabledKey(opts);
     }
+  }
+
+  pressChar(char) {
+    this.#charMap.get(char)?.simulatePress();
+  }
+
+  pressAction(actionName) {
+    this.#actionMap.get(actionName)?.simulatePress();
   }
 }
