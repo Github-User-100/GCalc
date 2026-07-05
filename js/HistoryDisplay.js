@@ -77,7 +77,6 @@ export class HistoryDisplay {
   #displayExpr(expr) {
     return expr
       .replace(/\*/g, '×')
-      .replace(/\//g, '÷')
       .replace(/~/g, '(-)')
       .replace(/-/g, '−');
   }

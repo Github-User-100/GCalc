@@ -75,11 +75,11 @@ try {
     if (e.key === 'Backspace') { e.preventDefault(); registry.pressAction('delete');         return; }
     if (e.key === 'Escape')    { e.preventDefault(); registry.pressAction('clearLiveInput'); return; }
 
-    if (/^[0-9]$/.test(e.key))       { registry.pressChar(e.key);          return; }
-    if (KEY_MAP[e.key] !== undefined) { registry.pressChar(KEY_MAP[e.key]); return; }
+    if (/^[0-9]$/.test(e.key))       { e.preventDefault(); registry.pressChar(e.key);          return; }
+    if (KEY_MAP[e.key] !== undefined) { e.preventDefault(); registry.pressChar(KEY_MAP[e.key]); return; }
     // x animates the x,T,θ button; other letters go direct (Calculator gates by mode)
-    if (e.key === 'x') { registry.pressChar('x'); return; }
-    if (/^[a-zA-Z]$/.test(e.key)) { calculator.input(e.key.toLowerCase()); return; }
+    if (e.key === 'x') { e.preventDefault(); registry.pressChar('x'); return; }
+    if (/^[a-zA-Z]$/.test(e.key)) { e.preventDefault(); calculator.input(e.key.toLowerCase()); return; }
   });
 
   log.log('INFO', 'GCalc ready');
