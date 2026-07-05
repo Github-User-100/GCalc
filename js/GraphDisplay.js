@@ -77,46 +77,7 @@ export class GraphDisplay {
   renderFunction2D(expr) {
     const log = AppLogger.enter('GraphDisplay.renderFunction2D');
     try {
-      const cam    = this.#camera;
-      const xMin   = cam.left;
-      const xMax   = cam.right;
-      const yRange = cam.top - cam.bottom;
-      const maxDy  = yRange * 0.4;
-      const steps  = 600;
-      const dx     = (xMax - xMin) / steps;
-
-      const color    = this.#colors[this.#colorIndex++ % this.#colors.length];
-      const material = new THREE.LineBasicMaterial({ color });
-      let run = [];
-
-      const flushRun = () => {
-        if (run.length >= 2) {
-          const pos = new Float32Array(run.length * 3);
-          for (let i = 0; i < run.length; i++) {
-            pos[i * 3] = run[i].x; pos[i * 3 + 1] = run[i].y; pos[i * 3 + 2] = 0;
-          }
-          const geo  = new THREE.BufferGeometry();
-          geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-          const line = new THREE.Line(geo, material);
-          line.userData.removable = true;
-          this.#scene.add(line);
-        }
-        run = [];
-      };
-
-      for (let i = 0; i <= steps; i++) {
-        const x      = xMin + i * dx;
-        const result = ExpressionParser.evaluateAt(expr, x);
-        const y      = (result instanceof Error || !isFinite(result)) ? null : result;
-        if (y === null) {
-          flushRun();
-        } else {
-          if (run.length > 0 && Math.abs(y - run[run.length - 1].y) > maxDy) flushRun();
-          run.push({ x, y });
-        }
-      }
-      flushRun();
-
+      this.#addFunctionGeometry(expr);
       this.#exprList.push(expr);
       this.#renderer.render(this.#scene, this.#camera);
       this.#renderAxisLabels();
@@ -130,6 +91,66 @@ export class GraphDisplay {
   }
 
   // ── Private ────────────────────────────────────────────────────────
+
+  #addFunctionGeometry(expr) {
+    const cam    = this.#camera;
+    const xMin   = cam.left;
+    const xMax   = cam.right;
+    const yRange = cam.top - cam.bottom;
+    const maxDy  = yRange * 0.4;
+    const steps  = 600;
+    const dx     = (xMax - xMin) / steps;
+
+    const color    = this.#colors[this.#colorIndex++ % this.#colors.length];
+    const material = new THREE.LineBasicMaterial({ color });
+    let run = [];
+
+    const flushRun = () => {
+      if (run.length >= 2) {
+        const pos = new Float32Array(run.length * 3);
+        for (let i = 0; i < run.length; i++) {
+          pos[i * 3] = run[i].x; pos[i * 3 + 1] = run[i].y; pos[i * 3 + 2] = 0;
+        }
+        const geo  = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const line = new THREE.Line(geo, material);
+        line.userData.removable = true;
+        this.#scene.add(line);
+      }
+      run = [];
+    };
+
+    for (let i = 0; i <= steps; i++) {
+      const x      = xMin + i * dx;
+      const result = ExpressionParser.evaluateAt(expr, x);
+      const y      = (result instanceof Error || !isFinite(result)) ? null : result;
+      if (y === null) {
+        flushRun();
+      } else {
+        if (run.length > 0 && Math.abs(y - run[run.length - 1].y) > maxDy) flushRun();
+        run.push({ x, y });
+      }
+    }
+    flushRun();
+  }
+
+  #rerenderAll() {
+    const toRemove = this.#scene.children.filter(obj => obj.userData.removable);
+    for (const obj of toRemove) {
+      this.#scene.remove(obj);
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) obj.material.dispose();
+    }
+    const exprs = [...this.#exprList];
+    this.#exprList   = [];
+    this.#colorIndex = 0;
+    for (const expr of exprs) {
+      this.#addFunctionGeometry(expr);
+      this.#exprList.push(expr);
+    }
+    this.#renderer.render(this.#scene, this.#camera);
+    this.#renderAxisLabels();
+  }
 
   #initScene() {
     const w = this.#canvas.clientWidth  || 320;
@@ -290,8 +311,11 @@ export class GraphDisplay {
     });
 
     window.addEventListener('mouseup', () => {
-      this.#isDragging = false;
-      el.style.cursor = '';
+      if (this.#isDragging) {
+        this.#isDragging    = false;
+        el.style.cursor = '';
+        this.#rerenderAll();
+      }
     });
 
     el.addEventListener('mouseleave', () => {
