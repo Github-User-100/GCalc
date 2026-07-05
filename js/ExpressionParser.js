@@ -43,8 +43,10 @@ export class ExpressionParser {
   }
 
   static evaluateAt(expr, x, y = undefined) {
-    let sub = expr.replace(/\bx\b/g, `(${x})`);
-    if (y !== undefined) sub = sub.replace(/\by\b/g, `(${y})`);
+    // (?<![a-zA-Z]) / (?![a-zA-Z]): match x/y not surrounded by letters.
+    // \b would fail on "2x" because 2 and x are both word chars.
+    let sub = expr.replace(/(?<![a-zA-Z])x(?![a-zA-Z])/g, `(${x})`);
+    if (y !== undefined) sub = sub.replace(/(?<![a-zA-Z])y(?![a-zA-Z])/g, `(${y})`);
     return ExpressionParser.evaluate(sub);
   }
 
