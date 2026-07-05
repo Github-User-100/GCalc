@@ -77,8 +77,9 @@ try {
 
     if (/^[0-9]$/.test(e.key))       { registry.pressChar(e.key);          return; }
     if (KEY_MAP[e.key] !== undefined) { registry.pressChar(KEY_MAP[e.key]); return; }
-    // x/y only meaningful in graph modes — let Calculator gate the actual input
+    // x animates the x,T,θ button; other letters go direct (Calculator gates by mode)
     if (e.key === 'x') { registry.pressChar('x'); return; }
+    if (/^[a-zA-Z]$/.test(e.key)) { calculator.input(e.key.toLowerCase()); return; }
   });
 
   log.log('INFO', 'GCalc ready');

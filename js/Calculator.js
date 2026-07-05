@@ -36,8 +36,9 @@ export class Calculator {
         this.#buffer = '';
         this.#state  = CalcState.INPUT;
       }
-      // x only valid in graph modes; y only valid in 3D mode
-      if (char === 'x' && this.#state !== CalcState.GRAPH_2D && this.#state !== CalcState.GRAPH_3D) return;
+      // Single letters only valid in graph modes (multi-char strings like 'sin(' pass through)
+      if (/^[a-zA-Z]$/.test(char) && this.#state !== CalcState.GRAPH_2D && this.#state !== CalcState.GRAPH_3D) return;
+      // y only valid in 3D mode
       if (char === 'y' && this.#state !== CalcState.GRAPH_3D) return;
       this.#buffer += char;
       this.#notify();
