@@ -13,11 +13,13 @@ try {
   const historyLogEl = document.getElementById('history-log');
   const liveInputEl  = document.getElementById('live-input');
   const graphCanvas  = document.getElementById('graph-canvas');
+  const axisCanvas   = document.getElementById('axis-canvas');
+  const graphTooltip = document.getElementById('graph-tooltip');
   const btnClrGraph  = document.getElementById('btn-clr-graph');
   const btnClrHist   = document.getElementById('btn-clr-hist');
 
   // ── Displays ─────────────────────────────────────────────────────────
-  const graphDisplay = new GraphDisplay(graphCanvas);
+  const graphDisplay = new GraphDisplay(graphCanvas, axisCanvas, graphTooltip);
 
   const historyDisplay = new HistoryDisplay(historyLogEl, liveInputEl, (text) => {
     calculator.clearLiveInput();
