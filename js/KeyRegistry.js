@@ -18,19 +18,19 @@ const KEY_DEFS = [
   { type: 'mode',     label: 'TRACE',   mode: 'trace',     secondary: 'CALC'     },
   { type: 'mode',     label: 'GRAPH',   mode: 'graph',     secondary: 'TABLE'    },
 
-  // ── Row 2: Mode / control (nav cluster blanked — can't form cross shape) ──
+  // ── Row 2: Mode / control — col 5: 2D GRAPH mode entry ────────────────
   { type: 'disabled', label: '2nd'                                },
-  { type: 'disabled', label: 'MODE', secondary: 'QUIT'         },
-  { type: 'action',   label: 'DEL',  action: 'delete', secondary: 'INS',  cssClass: 'key-action' },
-  { type: 'disabled', label: ''                                    },
-  { type: 'disabled', label: ''                                    },
+  { type: 'disabled', label: 'MODE', secondary: 'QUIT'           },
+  { type: 'action',   label: 'DEL',  action: 'delete', secondary: 'INS', cssClass: 'key-action' },
+  { type: 'disabled', label: ''                                   },
+  { type: 'action',   label: '2D<br>GRAPH', action: 'graph2d',   cssClass: 'key-blue' },
 
-  // ── Row 3: Alpha / stat (nav cluster blanked) ───────────────────────
-  { type: 'disabled', label: 'ALPHA',   secondary: 'A-LOCK'       },
-  { type: 'disabled', label: 'x,T,θ',   secondary: 'LINK'         },
-  { type: 'disabled', label: 'STAT',    secondary: 'LIST'          },
-  { type: 'disabled', label: ''                                    },
-  { type: 'disabled', label: ''                                    },
+  // ── Row 3: Alpha / stat — col 5: 3D GRAPH mode entry ───────────────────
+  { type: 'disabled', label: 'ALPHA',   secondary: 'A-LOCK'      },
+  { type: 'input',    label: 'x,T,θ',   char: 'x', secondary: 'LINK' },
+  { type: 'disabled', label: 'STAT',    secondary: 'LIST'         },
+  { type: 'disabled', label: ''                                   },
+  { type: 'action',   label: '3D<br>GRAPH', action: 'graph3d',   cssClass: 'key-blue' },
 
   // ── Row 4: Math / program ───────────────────────────────────────────
   { type: 'disabled', label: 'MATH',   secondary: 'TEST'  },
@@ -120,9 +120,11 @@ export class KeyRegistry {
 
       case 'action': {
         const action = () => {
-          if (def.action === 'evaluate')       calculator.evaluate();
-          else if (def.action === 'delete')    calculator.delete();
-          else if (def.action === 'clearLiveInput') calculator.clearLiveInput();
+          if      (def.action === 'evaluate')        calculator.evaluate();
+          else if (def.action === 'delete')          calculator.delete();
+          else if (def.action === 'clearLiveInput')  calculator.clearLiveInput();
+          else if (def.action === 'graph2d')         calculator.enterGraphMode('2d');
+          else if (def.action === 'graph3d')         calculator.enterGraphMode('3d');
         };
         return new ActionKey(opts, action);
       }

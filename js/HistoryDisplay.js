@@ -56,8 +56,8 @@ export class HistoryDisplay {
     }
   }
 
-  updateLiveInput(buffer) {
-    this.#liveEl.textContent = this.#displayExpr(buffer);
+  updateLiveInput(buffer, prefix = '') {
+    this.#liveEl.textContent = prefix + this.#displayExpr(buffer);
   }
 
   clearHistory() {

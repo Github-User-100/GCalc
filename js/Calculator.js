@@ -1,7 +1,7 @@
 import { AppLogger } from '../../shared/AppLogger/javascript/AppLogger.js';
 import { ExpressionParser } from './ExpressionParser.js';
 
-export const CalcState = Object.freeze({ INPUT: 'INPUT', RESULT: 'RESULT', ERROR: 'ERROR' });
+export const CalcState = Object.freeze({ INPUT: 'INPUT', RESULT: 'RESULT', ERROR: 'ERROR', GRAPH_2D: 'GRAPH_2D', GRAPH_3D: 'GRAPH_3D' });
 
 export class Calculator {
   #buffer = '';
@@ -15,6 +15,20 @@ export class Calculator {
   get buffer() { return this.#buffer; }
   get state()  { return this.#state; }
 
+  enterGraphMode(mode) {
+    const log = AppLogger.enter('Calculator.enterGraphMode');
+    try {
+      this.#buffer = '';
+      this.#state  = mode === '3d' ? CalcState.GRAPH_3D : CalcState.GRAPH_2D;
+      this.#notify();
+    } catch (err) {
+      log.log('ERROR', err.message);
+      throw err;
+    } finally {
+      log.complete();
+    }
+  }
+
   input(char) {
     const log = AppLogger.enter('Calculator.input');
     try {
@@ -22,6 +36,9 @@ export class Calculator {
         this.#buffer = '';
         this.#state  = CalcState.INPUT;
       }
+      // x only valid in graph modes; y only valid in 3D mode
+      if (char === 'x' && this.#state !== CalcState.GRAPH_2D && this.#state !== CalcState.GRAPH_3D) return;
+      if (char === 'y' && this.#state !== CalcState.GRAPH_3D) return;
       this.#buffer += char;
       this.#notify();
     } catch (err) {

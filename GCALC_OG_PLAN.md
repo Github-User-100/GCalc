@@ -125,42 +125,50 @@ On context reset, read this file, find the first unchecked item, and resume ther
 
 ## Tasks — Phase 2a: 2D Graphing
 
-**Mode entry:** Y= key activates 2D graphing mode. Live line prompt changes to `f(x) =`.
-Only `x` is valid as a free variable. All arithmetic and scientific functions remain valid.
-Pressing any non-graph key or CLEAR exits graphing mode.
+**Mode entry:** "2D GRAPH" button (Row 2, col 5) activates GRAPH_2D state.
+Live line prefix changes to `f(x) =`. Only `x` is valid as a free variable.
+CLEAR exits graphing mode. WINDOW, TRACE, ZOOM keypad buttons remain disabled —
+their functions are mouse-driven (see Notes).
 
-- [ ] Calculator: add GRAPH_2D state; Y= key transitions to it
+### Core graphing loop (do first)
+- [ ] KeyRegistry: Row 2 col 5 → 2D GRAPH ActionKey; Row 3 col 5 → 3D GRAPH stub
+- [ ] Calculator: add GRAPH_2D state; enterGraphMode('2d') transitions to it
+- [ ] Calculator: allow `x` character in buffer only in GRAPH_2D state
 - [ ] Live line: show `f(x) =` prefix in GRAPH_2D state
-- [ ] Input filtering: allow `x` character only in GRAPH_2D state
-- [ ] Extend ExpressionParser: evaluate expression with x substituted for each point
-- [ ] GraphDisplay: render 2D function plot (sample f(x) across xMin..xMax range)
-- [ ] History entries for graphed formulas show the formula and "→ graphed"
-- [ ] WINDOW screen: set xMin, xMax, yMin, yMax, xScl, yScl
-- [ ] TRACE mode: highlight point on curve, display (x, y) coords
-- [ ] 2nd-key toggle: ModeKey shifts secondary labels; enables SIN⁻¹, COS⁻¹, TAN⁻¹,
-      eˣ, 10ˣ, x√
-- [ ] ZOOM presets: ZStandard, ZSquare, ZDecimal
-- [ ] Multiple functions on same graph in different colors
+- [ ] ExpressionParser: add evaluateAt(expr, x) — substitutes x and evaluates
+- [ ] GraphDisplay: renderFunction2D(expr, window) — samples f(x) across range,
+      renders as a Three.js line in the graph canvas
+- [ ] History: graphed formula adds entry showing formula + "→ graphed"
+- [ ] Multiple functions stack — each ENTER adds to graph and history; CLR clears both
+
+### Mouse interaction (after core loop works)
+- [ ] Mouse wheel on graph canvas → zoom in/out (adjust window range, re-render)
+- [ ] Mouseover graph canvas → show live (x, y) tooltip at cursor position
+- [ ] Click on graph canvas → open settings panel (xMin, xMax, yMin, yMax)
+
+### Enhancements
+- [ ] Multiple functions in different colors (auto-cycle color per entry)
+- [ ] Axes and tick marks rendered on graph
+- [ ] 2nd-key toggle (deferred — no graphing dependency)
 
 ## Tasks — Phase 2b: 3D Graphing
 
-**Mode entry:** A dedicated stub key (selected at Phase 2b start from available stubs)
-activates 3D graphing mode. Live line prompt changes to `f(x,y) =`.
-Both `x` and `y` are valid as free variables. Result is z = f(x, y) surface plot.
+**Mode entry:** "3D GRAPH" button (Row 3, col 5) activates GRAPH_3D state.
+Live line prefix changes to `f(x,y) =`. Both `x` and `y` are valid as free variables.
+Result is z = f(x, y) surface mesh.
 
-- [ ] Select and wire the 3D mode key from available stub keys
-- [ ] Calculator: add GRAPH_3D state; selected key transitions to it
+- [ ] Calculator: add GRAPH_3D state; 3D GRAPH key transitions to it
+- [ ] Calculator: allow `x` and `y` characters only in GRAPH_3D state
 - [ ] Live line: show `f(x,y) =` prefix in GRAPH_3D state
-- [ ] Input filtering: allow `x` and `y` characters only in GRAPH_3D state
-- [ ] Extend ExpressionParser: evaluate expression with x and y substituted on a grid
-- [ ] GraphDisplay: build surface mesh (evaluate z on x,y grid → BufferGeometry)
-- [ ] Apply Three.js material with shading to surface mesh
-- [ ] Mouse/touch drag to rotate view (Three.js OrbitControls)
-- [ ] Scroll/pinch to zoom
-- [ ] Per-axis scale controls: xScale, yScale, zScale (sliders or input fields)
-- [ ] WINDOW screen extended: add zMin, zMax, zScl for 3D mode
-- [ ] Render axes and grid in 3D space
+- [ ] ExpressionParser: add evaluateAt(expr, x, y) — substitutes both variables
+- [ ] GraphDisplay: renderFunction3D(expr, window) — evaluates z on x,y grid,
+      builds BufferGeometry surface mesh
+- [ ] Three.js material with shading applied to surface mesh
+- [ ] Click and drag on canvas → OrbitControls camera rotation
+- [ ] Mouse wheel → zoom (OrbitControls)
+- [ ] Click on canvas → settings panel extended with zMin, zMax, zScl
 - [ ] Multiple 3D surfaces on same graph in different colors
+- [ ] Axes and grid rendered in 3D space
 
 ## Notes
 - Three.js is isolated entirely within GraphDisplay. No other class references it.
@@ -171,4 +179,6 @@ Both `x` and `y` are valid as free variables. Result is z = f(x, y) surface plot
 - Phase 2a validates the parser and 2D pipeline before committing to 3D (Phase 2b).
 - No localStorage, no cookies. History is session-only.
 - Mode character restrictions: calc mode (no variables), 2D mode (x only), 3D mode (x,y).
-- 3D mode key: TBD — select from stub keys at Phase 2b design session.
+- WINDOW/TRACE/ZOOM buttons remain disabled — mouse replaces them entirely.
+- Graph settings (window range) exposed via click on graph canvas, not a separate screen.
+- Mouseover → trace tooltip. Mouse wheel → zoom. Click+drag (3D) → orbit rotation.

@@ -568,6 +568,73 @@ would have left the calculator materially incomplete at a stage where it was bei
 
 ---
 
+## 2026-07-05 09:00 CDT — Phase 2 UI Architecture: Mouse-First, Graph Mode Keys
+
+---
+
+### Graph Mode Entry: Dedicated Keys, Not TI-82 Button Repurposing
+
+[RJ] The TI-82's WINDOW, TRACE, and ZOOM buttons exist because the physical device has
+one small screen and no pointing device. Every interaction that a mouse handles naturally
+— hovering, clicking, scrolling, dragging — required a dedicated hardware button on the
+TI-82. That constraint is gone on the web.
+
+**Decision: WINDOW, TRACE, and ZOOM keypad buttons remain disabled.** Their functions
+are handled by mouse interaction with the graph canvas:
+
+| TI-82 button | GCalc equivalent          |
+|--------------|---------------------------|
+| WINDOW       | Click on graph canvas → settings panel |
+| TRACE        | Mouseover graph → live (x, y) tooltip  |
+| ZOOM         | Mouse wheel → zoom in/out              |
+| (3D only) rotation | Click and drag → orbit camera    |
+
+[RJ] Rationale stated directly: *"The TI-82 required those buttons because it just had
+one screen and no mouse, and I wanted the keypad laid out similarly, but we should use
+the mouse as much as possible."* This is the right call. Preserving TI-82 buttons as
+non-functional stubs in a web UI would be cargo-cult design — retaining the form of a
+hardware constraint that no longer applies. The buttons are there for visual authenticity;
+the interactions are mouse-native.
+
+---
+
+### Graph Mode Keys: Rows 2–3, Column 5
+
+[RJ] The two blank slots in the navigation cluster (Row 2 col 5 and Row 3 col 5 — blanked
+in Phase 1 because a rectangular grid can't represent a cross-shaped D-pad) become the
+graph mode entry buttons:
+
+- **Row 2, col 5: 2D GRAPH** — activates GRAPH_2D state; live line accepts `x` as variable
+- **Row 3, col 5: 3D GRAPH** — activates GRAPH_3D state; live line accepts `x` and `y`
+
+These positions give the graph mode buttons a natural grouping at the top-right of the
+keypad, adjacent to the existing graphing function row (Y=, WINDOW, ZOOM, TRACE, GRAPH).
+The blank col 4 slots remain blank — the asymmetry is acceptable given the context.
+
+---
+
+### Multiple Functions: Stack in History, Clear Button to Reset
+
+[RJ] Graphed functions accumulate in the history window alongside arithmetic results.
+The user types a function, presses ENTER, the graph renders and a history entry appears
+showing the formula and "→ graphed". A second function adds to the graph and adds another
+history entry. The existing CLR button on the history screen clears all history entries
+and the graph simultaneously.
+
+This eliminates the need for Y1/Y2/Y3 slot management from the TI-82. The history window
+IS the function list. No separate function editor needed.
+
+---
+
+### 2nd-Key Toggle: Deferred
+
+The 2nd-key functionality (SIN⁻¹, COS⁻¹, TAN⁻¹, eˣ, 10ˣ, x√) is deferred. The primary
+trig and math functions are sufficient for Phase 2a graphing. The 2nd key requires a mode
+indicator in the UI and label-shift logic across applicable keys — a self-contained feature
+with no graphing dependency.
+
+---
+
 ## 2026-07-04 13:30 CDT — Phase 1 Complete
 
 Phase 1 declared complete. Verified working:

@@ -42,6 +42,12 @@ export class ExpressionParser {
     }
   }
 
+  static evaluateAt(expr, x, y = undefined) {
+    let sub = expr.replace(/\bx\b/g, `(${x})`);
+    if (y !== undefined) sub = sub.replace(/\by\b/g, `(${y})`);
+    return ExpressionParser.evaluate(sub);
+  }
+
   static formatNumber(n) {
     if (!isFinite(n)) return 'ERR:OVERFLOW';
     // Trim floating-point noise: 0.1+0.2 = 0.30000000000000004 → 0.3
