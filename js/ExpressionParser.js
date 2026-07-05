@@ -116,7 +116,22 @@ export class ExpressionParser {
 
       return new Error('ERR:SYNTAX');
     }
-    return tokens;
+    return ExpressionParser.#insertImplicitMultiply(tokens);
+  }
+
+  static #insertImplicitMultiply(tokens) {
+    const result = [];
+    for (let i = 0; i < tokens.length; i++) {
+      result.push(tokens[i]);
+      if (i + 1 < tokens.length) {
+        const cur  = tokens[i];
+        const next = tokens[i + 1];
+        const curEnds    = cur.type  === 'NUM' || (cur.type  === 'OP' && cur.value  === ')');
+        const nextBegins = next.type === 'NUM' || next.type  === 'FUNC' || (next.type === 'OP' && next.value === '(');
+        if (curEnds && nextBegins) result.push({ type: 'OP', value: '*' });
+      }
+    }
+    return result;
   }
 
   // ── Function evaluator ───────────────────────────────────────────────
