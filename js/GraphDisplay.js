@@ -18,6 +18,10 @@ function formatTick(n) {
   return parseFloat(n.toFixed(d)).toString();
 }
 
+function hexToCSS(hex) {
+  return '#' + hex.toString(16).padStart(6, '0');
+}
+
 export class GraphDisplay {
   #canvas;
   #renderer;
@@ -77,8 +81,8 @@ export class GraphDisplay {
   renderFunction2D(expr) {
     const log = AppLogger.enter('GraphDisplay.renderFunction2D');
     try {
-      this.#addFunctionGeometry(expr);
-      this.#exprList.push(expr);
+      const colorHex = this.#addFunctionGeometry(expr);
+      this.#exprList.push({ expr, colorHex });
       this.#renderer.render(this.#scene, this.#camera);
       this.#renderAxisLabels();
       log.log('INFO', `Rendered 2D: ${expr}`);
@@ -103,6 +107,7 @@ export class GraphDisplay {
 
     const color    = this.#colors[this.#colorIndex++ % this.#colors.length];
     const material = new THREE.LineBasicMaterial({ color });
+    // color is returned so callers can store it for dot/tooltip colouring
     let run = [];
 
     const flushRun = () => {
@@ -138,6 +143,7 @@ export class GraphDisplay {
       }
     }
     flushRun();
+    return color;
   }
 
   #rerenderAll() {
@@ -147,15 +153,42 @@ export class GraphDisplay {
       if (obj.geometry) obj.geometry.dispose();
       if (obj.material) obj.material.dispose();
     }
-    const exprs = [...this.#exprList];
+    const saved = [...this.#exprList];
     this.#exprList   = [];
     this.#colorIndex = 0;
-    for (const expr of exprs) {
-      this.#addFunctionGeometry(expr);
-      this.#exprList.push(expr);
+    for (const { expr } of saved) {
+      const colorHex = this.#addFunctionGeometry(expr);
+      this.#exprList.push({ expr, colorHex });
     }
     this.#renderer.render(this.#scene, this.#camera);
     this.#renderAxisLabels();
+  }
+
+  #drawDots(worldX) {
+    const ctx    = this.#axisCtx;
+    const cam    = this.#camera;
+    const w      = this.#axisCanvas.width;
+    const h      = this.#axisCanvas.height;
+    const xRange = cam.right - cam.left;
+    const yRange = cam.top   - cam.bottom;
+
+    for (const { expr, colorHex } of this.#exprList) {
+      const result = ExpressionParser.evaluateAt(expr, worldX);
+      if (result instanceof Error || !isFinite(result)) continue;
+      const worldY = result;
+      if (worldY < cam.bottom || worldY > cam.top) continue;
+
+      const sx = ((worldX - cam.left) / xRange) * w;
+      const sy = ((cam.top - worldY)  / yRange) * h;
+
+      ctx.beginPath();
+      ctx.arc(sx, sy, 5, 0, Math.PI * 2);
+      ctx.fillStyle   = hexToCSS(colorHex);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth   = 1.5;
+      ctx.stroke();
+    }
   }
 
   #initScene() {
@@ -324,7 +357,10 @@ export class GraphDisplay {
     });
 
     el.addEventListener('mouseleave', () => {
-      if (!this.#isDragging) this.#tooltipEl.style.display = 'none';
+      if (!this.#isDragging) {
+        this.#tooltipEl.style.display = 'none';
+        this.#renderAxisLabels(); // erase dots
+      }
     });
   }
 
@@ -339,17 +375,24 @@ export class GraphDisplay {
     }
 
     const { x: worldX } = this.#worldFromScreen(e.clientX, e.clientY);
-    const lines = [`x = ${formatTick(worldX)}`];
 
+    // Redraw labels, then draw dots on top for current x
+    this.#renderAxisLabels();
+    this.#drawDots(worldX);
+
+    // Build color-coded tooltip
+    const multi = this.#exprList.length > 1;
+    const parts = [`x = ${formatTick(worldX)}`];
     for (let i = 0; i < this.#exprList.length; i++) {
-      const result = ExpressionParser.evaluateAt(this.#exprList[i], worldX);
+      const { expr, colorHex } = this.#exprList[i];
+      const result = ExpressionParser.evaluateAt(expr, worldX);
       if (!(result instanceof Error) && isFinite(result)) {
-        const label = this.#exprList.length === 1 ? 'y' : `y${i + 1}`;
-        lines.push(`${label} = ${formatTick(result)}`);
+        const label = multi ? `y${i + 1}` : 'y';
+        parts.push(`<span style="color:${hexToCSS(colorHex)}">${label} = ${formatTick(result)}</span>`);
       }
     }
 
-    this.#tooltipEl.innerHTML = lines.join('<br>');
+    this.#tooltipEl.innerHTML = parts.join('<br>');
     this.#tooltipEl.style.display = 'block';
 
     const par = this.#canvas.parentElement.getBoundingClientRect();
