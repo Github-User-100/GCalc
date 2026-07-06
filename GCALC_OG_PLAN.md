@@ -100,23 +100,23 @@ On context reset, read this file, find the first unchecked item, and resume ther
 ## Tasks — Phase 1 Extended: Scientific Functions
 
 ### ExpressionParser Extensions
-- [ ] Add function-call parsing: sin(), cos(), tan(), asin(), acos(), atan()
-- [ ] Add: ln(), log() (base 10), sqrt(), abs()
-- [ ] Add: exp() or e^x (Euler's number raised to power)
-- [ ] Add constants: π (Math.PI) and e (Math.E) as named tokens
-- [ ] Preserve all existing arithmetic — no regressions
+- [x] Add function-call parsing: sin(), cos(), tan(), asin(), acos(), atan()
+- [x] Add: ln(), log() (base 10), sqrt(), abs()
+- [x] Add: exp() or e^x (Euler's number raised to power)
+- [x] Add constants: π (Math.PI) and e (Math.E) as named tokens
+- [x] Preserve all existing arithmetic — no regressions
 
 ### Key Enablement
-- [ ] SIN → InputKey, sends `sin(`
-- [ ] COS → InputKey, sends `cos(`
-- [ ] TAN → InputKey, sends `tan(`
-- [ ] LN  → InputKey, sends `ln(`
-- [ ] LOG → InputKey, sends `log(`
-- [ ] √   → InputKey, sends `sqrt(`
-- [ ] x²  → InputKey, sends `^2`  (postfix — appends to current expression)
-- [ ] x⁻¹ → InputKey, sends `^(-1)`
-- [ ] π   → InputKey, sends `π` token (parser converts to Math.PI value)
-- [ ] e   → InputKey, sends `e` token (parser converts to Math.E value) [if key available]
+- [x] SIN → InputKey, sends `sin(`
+- [x] COS → InputKey, sends `cos(`
+- [x] TAN → InputKey, sends `tan(`
+- [x] LN  → InputKey, sends `ln(`
+- [x] LOG → InputKey, sends `log(`
+- [ ] √   → InputKey, sends `sqrt(` (secondary label on x² key — needs 2nd-key toggle)
+- [x] x²  → InputKey, sends `^2`
+- [x] x⁻¹ → InputKey, sends `^(-1)`
+- [ ] π   → InputKey, sends `π` token (secondary on ^ key — needs 2nd-key toggle)
+- [ ] e   → InputKey, sends `e` token (no key slot — needs 2nd-key toggle)
 
 ### Testing
 - [ ] Expand calculator.test.js: sin/cos/tan/ln/log/sqrt/π/e cases
@@ -131,24 +131,27 @@ CLEAR exits graphing mode. WINDOW, TRACE, ZOOM keypad buttons remain disabled �
 their functions are mouse-driven (see Notes).
 
 ### Core graphing loop (do first)
-- [ ] KeyRegistry: Row 2 col 5 → 2D GRAPH ActionKey; Row 3 col 5 → 3D GRAPH stub
-- [ ] Calculator: add GRAPH_2D state; enterGraphMode('2d') transitions to it
-- [ ] Calculator: allow `x` character in buffer only in GRAPH_2D state
-- [ ] Live line: show `f(x) =` prefix in GRAPH_2D state
-- [ ] ExpressionParser: add evaluateAt(expr, x) — substitutes x and evaluates
-- [ ] GraphDisplay: renderFunction2D(expr, window) — samples f(x) across range,
-      renders as a Three.js line in the graph canvas
-- [ ] History: graphed formula adds entry showing formula + "→ graphed"
-- [ ] Multiple functions stack — each ENTER adds to graph and history; CLR clears both
+- [x] KeyRegistry: CALC (row 2 col 5), 2D GRAPH (row 3 col 4), 3D GRAPH stub (row 3 col 5)
+- [x] Calculator: add GRAPH_2D state; enterGraphMode('2d') transitions to it
+- [x] Calculator: allow `x` and letters (for function names) in GRAPH_2D state; block in calc mode
+- [x] Live line: show `f(x) =` prefix in GRAPH_2D state
+- [x] ExpressionParser: evaluateAt(expr, x) — substitutes x (lookaround regex, handles 2x notation)
+- [x] ExpressionParser: implicit multiplication (2x, 2sin(x), (x+1)(x-1))
+- [x] GraphDisplay: renderFunction2D — 600-point sample, discontinuity detection (sign-flip guard),
+      color cycling, multiple contiguous run segments
+- [x] History: graphed formula adds entry showing formula + "→ graphed"
+- [x] Multiple functions stack — each ENTER adds to graph and history; CLR clears both
+- [x] CALC button (row 2 col 5, blue) exits graph mode back to calculator
 
 ### Mouse interaction (after core loop works)
-- [ ] Mouse wheel on graph canvas → zoom in/out (adjust window range, re-render)
-- [ ] Mouseover graph canvas → show live (x, y) tooltip at cursor position
-- [ ] Click on graph canvas → open settings panel (xMin, xMax, yMin, yMax)
+- [x] Mouse wheel on graph canvas → zoom in/out, resamples curves at new range
+- [x] Click-drag pan → resamples curves on mouse release
+- [x] Mouseover graph canvas → color-coded (x, y) tooltip + dot on each graphed line
+- [ ] ~~Click on graph canvas → settings panel~~ — dropped; mouse wheel/drag covers it
 
 ### Enhancements
-- [ ] Multiple functions in different colors (auto-cycle color per entry)
-- [ ] Axes and tick marks rendered on graph
+- [x] Multiple functions in different colors (auto-cycle, color stored per expression)
+- [x] Axes and tick marks on graph (2D canvas overlay, niceStep intervals)
 - [ ] 2nd-key toggle (deferred — no graphing dependency)
 
 ## Tasks — Phase 2b: 3D Graphing
