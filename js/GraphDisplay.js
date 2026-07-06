@@ -127,7 +127,13 @@ export class GraphDisplay {
       if (y === null) {
         flushRun();
       } else {
-        if (run.length > 0 && Math.abs(y - run[run.length - 1].y) > maxDy) flushRun();
+        if (run.length > 0) {
+          const lastY = run[run.length - 1].y;
+          // Split only when the jump is large AND the sign flips — this catches
+          // tan(x)-style asymptotes (+ → −) without cutting off 1/x-style
+          // approaches where both sides stay the same sign racing to ±infinity.
+          if (Math.abs(y - lastY) > maxDy && Math.sign(y) !== Math.sign(lastY)) flushRun();
+        }
         run.push({ x, y });
       }
     }
@@ -268,8 +274,7 @@ export class GraphDisplay {
     cam.top    = wy + (cam.top    - wy) * factor;
     cam.bottom = wy + (cam.bottom - wy) * factor;
     cam.updateProjectionMatrix();
-    this.#renderer.render(this.#scene, this.#camera);
-    this.#renderAxisLabels();
+    this.#rerenderAll();
   }
 
   #attachMouseHandlers() {
