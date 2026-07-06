@@ -68,7 +68,7 @@ const KEY_DEFS = [
   { type: 'input',    label: '−',      char: '-',  cssClass: 'key-dark' },
 
   // ── Row 9   ─────────────────────────
-  { type: 'disabled', label: 'STO→',   secondary: 'RCL'    },
+  { type: 'input',    label: 'π',        char: 'π'           },
   { type: 'input',    label: '1',      char: '1'            },
   { type: 'input',    label: '2',      char: '2'            },
   { type: 'input',    label: '3',      char: '3'            },
