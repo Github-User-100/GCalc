@@ -44,7 +44,7 @@ const KEY_DEFS = [
   { type: 'input',    label: 'SIN',   char: 'sin(',  secondary: 'SIN⁻¹' },
   { type: 'input',    label: 'COS',   char: 'cos(',  secondary: 'COS⁻¹' },
   { type: 'input',    label: 'TAN',   char: 'tan(',  secondary: 'TAN⁻¹' },
-  { type: 'input',    label: '^',     char: '^',     secondary: 'π'      },
+  { type: 'input',    label: '^',     char: '^'                          },
 
   // ── Row 6: x² / comma / parens / divide ────────────────────────────
   { type: 'input',    label: 'x²',    char: '^2',    secondary: '√'      },
