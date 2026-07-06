@@ -23,7 +23,7 @@ const KEY_DEFS = [
   { type: 'disabled', label: 'MODE', secondary: 'QUIT'           },
   { type: 'action',   label: 'DEL',  action: 'delete', secondary: 'INS', cssClass: 'key-action' },
   { type: 'disabled', label: ''                                   },
-  { type: 'action',   label: 'CALC', action: 'clearLiveInput',   cssClass: 'key-action' },
+  { type: 'action',   label: 'CALC', action: 'clearLiveInput',   cssClass: 'key-blue' },
 
   // ── Row 3: Alpha / stat — col 4: 2D GRAPH, col 5: 3D GRAPH ────────────
   { type: 'disabled', label: 'ALPHA',   secondary: 'A-LOCK'      },
