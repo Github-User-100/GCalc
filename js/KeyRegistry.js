@@ -61,7 +61,7 @@ const KEY_DEFS = [
   { type: 'input',    label: '×',      char: '*',  cssClass: 'key-dark' },
 
   // ── Row 8   ───────────────────────────────────
-  { type: 'input',    label: 'LN',    char: 'ln(',   secondary: 'eˣ'   },
+  { type: 'input',    label: 'LN',    char: 'ln('                      },
   { type: 'input',    label: '4',      char: '4'            },
   { type: 'input',    label: '5',      char: '5'            },
   { type: 'input',    label: '6',      char: '6'            },
@@ -75,7 +75,7 @@ const KEY_DEFS = [
   { type: 'input',    label: '+',      char: '+',  cssClass: 'key-dark' },
 
   // ── Row 10: STO→ + digits 1–3 + add ────────────────────────────────
-  { type: 'disabled', label: 'ON',     secondary: "OFF"   },
+  { type: 'input',    label: 'e',       char: 'e'           },
   { type: 'input',    label: '0',      char: '0'            },
   { type: 'input',    label: '.',      char: '.'            },
   { type: 'input',    label: '(-)',    char: '~',  secondary: 'ANS'   },
