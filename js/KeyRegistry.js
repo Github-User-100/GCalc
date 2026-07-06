@@ -18,18 +18,18 @@ const KEY_DEFS = [
   { type: 'mode',     label: 'TRACE',   mode: 'trace',     secondary: 'CALC'     },
   { type: 'mode',     label: 'GRAPH',   mode: 'graph',     secondary: 'TABLE'    },
 
-  // ── Row 2: Mode / control — col 5: 2D GRAPH mode entry ────────────────
+  // ── Row 2: Mode / control — col 5: return to calculator ───────────────
   { type: 'disabled', label: '2nd'                                },
   { type: 'disabled', label: 'MODE', secondary: 'QUIT'           },
   { type: 'action',   label: 'DEL',  action: 'delete', secondary: 'INS', cssClass: 'key-action' },
   { type: 'disabled', label: ''                                   },
-  { type: 'action',   label: '2D<br>GRAPH', action: 'graph2d',   cssClass: 'key-blue' },
+  { type: 'action',   label: 'CALC', action: 'clearLiveInput',   cssClass: 'key-action' },
 
-  // ── Row 3: Alpha / stat — col 5: 3D GRAPH mode entry ───────────────────
+  // ── Row 3: Alpha / stat — col 4: 2D GRAPH, col 5: 3D GRAPH ────────────
   { type: 'disabled', label: 'ALPHA',   secondary: 'A-LOCK'      },
   { type: 'input',    label: 'x,T,θ',   char: 'x', secondary: 'LINK' },
   { type: 'disabled', label: 'STAT',    secondary: 'LIST'         },
-  { type: 'disabled', label: ''                                   },
+  { type: 'action',   label: '2D<br>GRAPH', action: 'graph2d',   cssClass: 'key-blue' },
   { type: 'action',   label: '3D<br>GRAPH', action: 'graph3d',   cssClass: 'key-blue' },
 
   // ── Row 4: Math / program ───────────────────────────────────────────
